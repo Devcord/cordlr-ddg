@@ -109,7 +109,7 @@ module.exports = class DDG extends CordlrPlugin {
 
         if (!fields) {
           // Empty result
-          return this.sendInfo(message, 'Couldn\'t find any results :(', 'No Result', {}, 'error')
+          return this.sendInfo(message, 'Could not find any results :(', 'No Result', {}, 'error')
         }
 
         // Colors
@@ -117,12 +117,12 @@ module.exports = class DDG extends CordlrPlugin {
         const successColor = this.colorToDecimal('#36c17e')
 
         // If there is a redirectName
-        // it means thay already use !bang.
+        // it means they already use !bang.
         // No need to inform about the !bangs
         let description  = ''
         
-        // If No redirectName means they didnt
-        // use !bang and therfore we can inform
+        // If No redirectName means they didn't
+        // use !bang and therefore we can inform
         // them about the use of !bang.
         if (!redirectName) {
           // Inform about !bangs
