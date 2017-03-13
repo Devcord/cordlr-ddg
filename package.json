@@ -1,6 +1,6 @@
 {
   "name": "cordlr-ddg",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Cordlr duckduckgo plugin",
   "main": "index.js",
   "scripts": {
