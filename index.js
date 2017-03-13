@@ -1,12 +1,13 @@
 const CordlrPlugin = require('cordlr-plugin')
 const request = require('request') // Simple HTTP Request library
+const urlParse = require('url').parse // Parse URL to get hostname
 
 module.exports = class DDG extends CordlrPlugin {
   constructor (bot, config) {
     super(bot, config)
 
     this.name = 'ddg' // Plugin Name
-    this.description = 'DuckDuckGo Search Engien - Instant Answer API' // Plugin Description
+    this.description = 'DuckDuckGo Search Engine - Instant Answer API' // Plugin Description
 
     this.commands = {
       'ddg': { // Plugin Command --> !ddg
@@ -22,6 +23,7 @@ module.exports = class DDG extends CordlrPlugin {
   Duckduckgo(message, args, flags) {
     // Search string
     const urlQuery = args.join(' ')
+    const encodedUrlQuery = encodeURIComponent(urlQuery)
 
     if (!urlQuery) {
       let prefix = this.config.prefix
@@ -32,12 +34,11 @@ module.exports = class DDG extends CordlrPlugin {
       return this.sendInfo(message, ddgUsage, ddgUsageTitle, {text: ddgUsageEg}, 'warning')
     }
 
-    // Colors
-    const errorColor = this.colorToDecimal('#fc5246')
-    const successColor = this.colorToDecimal('#36c17e')
+    // DuckDuckGo API Query URL with Options
+    const url = this.getUrl(encodedUrlQuery)
 
     // Fetch DuckDuckGo Instant Answer API Result
-    request(this.getUrl(urlQuery), (error, response, body) => {
+    request(url, (error, response, body) => {
       if (error !== null) {
         // If there is an error fetching the result
         this.bot.emit('error', new Error('Cordlr-ddg Request error:' + error))
@@ -47,37 +48,100 @@ module.exports = class DDG extends CordlrPlugin {
       // If response code is == 200
       if (response.statusCode == 200) {
         const json = JSON.parse(body) // convert body to json
-      
+        let fields = [] // Empty placeholder
+        let redirectName = ''
+
         if (urlQuery[0] == '!') { // E.g !g !yt !github !wiki
+          // Get Search Engine Name (E.g "www.youtube.com", "encrypted.google.com", "github.com")
+          redirectName = urlParse(json.Redirect).hostname
+
           // Results with !bang has redirect result
-          return this.sendEmbed(message, {
-            title: json.Redirect,
-            url: json.Redirect,
-            description: 'Redirect link',
-            color: successColor,
-            footer: {
-              text: urlQuery
-            }
+          fields.push({
+            name: redirectName,
+            value: json.Redirect,
+            inline: true
           })
         }
 
         // Normal DuckDuckGo result
-        if (json.Heading) {
-          return this.sendEmbed(message, {
-            title: json.AbstractSource,
-            description: json.AbstractText || 'Could\'t find any description',
-            url: json.AbstractURL,
-            color: successColor,
-            footer: {
-              text: json.Heading
+        else if (json.Heading) {
+          // If there are Related Topics
+          if (json.RelatedTopics) {
+            let k = 3 // Loop 3 times
+
+            // If there is less than 3 related topics
+            if (json.RelatedTopics.length < 3) {
+              k = json.RelatedTopics.length
             }
+
+            // Only fetch top 3 results, or less
+            while (k > 0) {
+              // No Value is not allowed!
+              if (json.RelatedTopics[k-1].FirstURL) {
+                fields.push({
+                  name: json.RelatedTopics[k-1].Text || urlQuery,
+                  value: json.RelatedTopics[k-1].FirstURL,
+                  inline: true
+                })
+              }
+
+              k--
+            }
+          }
+
+          // Abstract result
+          fields.unshift({
+            name: json.AbstractSource,
+            value: `${json.AbstractText} \n ${json.AbstractURL}`,
+            inline: true
           })
         }
 
-        else {
+        // if search string for example is
+        // 10 + 20 then json.Answer would be 30
+        if (json.Answer) {
+          fields.push({
+            name: `Answer for ${urlQuery}`,
+            value: json.Answer,
+            inline: true
+          })
+        }
+
+        if (!fields) {
           // Empty result
           return this.sendInfo(message, 'Couldn\'t find any results :(', 'No Result', {}, 'error')
         }
+
+        // Colors
+        const errorColor = this.colorToDecimal('#fc5246')
+        const successColor = this.colorToDecimal('#36c17e')
+
+        // If there is a redirectName
+        // it means thay already use !bang.
+        // No need to inform about the !bangs
+        let description  = ''
+        
+        // If No redirectName means they didnt
+        // use !bang and therfore we can inform
+        // them about the use of !bang.
+        if (!redirectName) {
+          // Inform about !bangs
+          description = 'You can also use !bang\'s such as !g (google) !yt (youtube), etc, \n Read more about it at (https://duckduckgo.com/bang).'
+        }
+
+        // Send the results DuckDuckGo could Fetch
+        return this.sendEmbed(message, {
+          title: `Here are your search results for ${urlQuery} \n`,
+          description: description,
+          url: '',
+          color: successColor,
+          fields: fields,
+          footer: {
+            text: 'Results from DuckDuckGo',
+            icon_url: 'https://duckduckgo.com/assets/icons/meta/DDG-icon_256x256.png',
+            proxy_icon_url: 'https://duckduckgo.com'
+          }
+        })
       }
     })
   }
