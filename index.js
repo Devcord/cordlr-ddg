@@ -164,7 +164,7 @@ module.exports = class DDG extends CordlrPlugin {
       return this.sendInfo(message, 'Could not find any results :(', 'No Result', {}, 'error')
     }
 
-    // If redirect, no descrition is nessesary
+    // If redirect, no description is necessary
     let description  = ''
     
     if (!data.redirect) {
