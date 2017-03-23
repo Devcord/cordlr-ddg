@@ -103,7 +103,7 @@ module.exports = class DDG extends CordlrPlugin {
         fields.push({
           name: redirectName,
           value: json.Redirect,
-          inline: true
+          inline: false
         })
       }
     }
@@ -126,7 +126,7 @@ module.exports = class DDG extends CordlrPlugin {
             fields.push({
               name: json.RelatedTopics[k-1].Text || urlQuery,
               value: json.RelatedTopics[k-1].FirstURL,
-              inline: true
+              inline: false
             })
           }
 
@@ -138,7 +138,7 @@ module.exports = class DDG extends CordlrPlugin {
       fields.unshift({ // Add to the start of Array
         name: json.AbstractSource,
         value: `${json.AbstractText}\n ${json.AbstractURL}`,
-        inline: true
+        inline: false
       })
     }
 
@@ -148,7 +148,7 @@ module.exports = class DDG extends CordlrPlugin {
       fields.push({
         name: `Answer for ${urlQuery}`,
         value: json.Answer,
-        inline: true
+        inline: false
       })
     }
 
