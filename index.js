@@ -155,7 +155,7 @@ module.exports = class DDG extends CordlrPlugin {
   }
 
   send (message, data) {
-    if (data.fields === false) { // If no Results found
+    if (data.fields.length < 1) { // If no Results found
       return this.sendInfo(message, 'Could not find any results :(', 'No Result', {}, 'error')
     }
 
