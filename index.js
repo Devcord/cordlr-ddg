@@ -13,13 +13,13 @@ module.exports = class DDG extends CordlrPlugin {
       'ddg': {
         'usage': '[<!bang> <search string>] or <search string>',
         'function': 'Duckduckgo',
-        'description': 'DuckDuckGo Instant Answer API Search', 
+        'description': 'DuckDuckGo Instant Answer API Search',
         'permissions': []
       }
     }
   }
 
-  Duckduckgo(message, args, flags) {
+  Duckduckgo (message, args, flags) {
     // Search string
     const urlQuery = args.join(' ') // The actual search Query
     const encodedUrlQuery = encodeURIComponent(urlQuery) // URI encoded search Query
@@ -28,9 +28,7 @@ module.exports = class DDG extends CordlrPlugin {
     // Then show how to use the plugin
     if (!urlQuery) {
       this.usage(message)
-    } 
-    
-    else {
+    } else {
       // DuckDuckGo API Query URL with Options
       const url = this.getUrl(encodedUrlQuery)
 
@@ -38,9 +36,9 @@ module.exports = class DDG extends CordlrPlugin {
       request(url, (error, response, body) => {
         // Check if any Error
         const err = this.handleError(message, error)
-        
+
         // If response code is == 200 and no error
-        if (!err && response.statusCode == 200) {
+        if (!err && response.statusCode === 200) {
           // Parse the data and return Results
           const data = this.parseData(body, urlQuery)
 
@@ -52,7 +50,7 @@ module.exports = class DDG extends CordlrPlugin {
   }
 
   // Will print how to use this plugin
-  usage(message) {
+  usage (message) {
     const prefix = this.config.prefix
     const ddgUsage = ` ${prefix}ddg ${this.commands.ddg.usage}`
     const ddgUsageTitle = `${prefix}ddg Usage`
@@ -62,7 +60,7 @@ module.exports = class DDG extends CordlrPlugin {
   }
 
   // Create DuckDuckGo Query URL with Options
-  getUrl(urlQuery) {
+  getUrl (urlQuery) {
     const baseUrl = 'https://api.duckduckgo.com/?q=' // DuckDuckGo Query URL
     const urlRedirect = '&no_redirect=1' // 1 = No redirect
     const urlFormat = '&format=json' // json or xml
@@ -75,7 +73,7 @@ module.exports = class DDG extends CordlrPlugin {
   }
 
   // Will check for error
-  handleError(message, error) {
+  handleError (message, error) {
     if (error !== null) {
       // Print an error to console
       this.bot.emit('error', new Error('Cordlr-ddg Request error:' + error))
@@ -88,13 +86,13 @@ module.exports = class DDG extends CordlrPlugin {
   }
 
   // Will parse data and get all results
-  parseData(body, urlQuery) {
+  parseData (body, urlQuery) {
     const json = JSON.parse(body) // convert body to json
 
     const fields = [] // Empty placeholder
     let redirectName = '' // Empty if no redirect link
 
-    if (urlQuery[0] == '!') { // E.g !g !yt !github !wiki
+    if (urlQuery[0] === '!') { // E.g !g !yt !github !wiki
       // Get Search Engine Name (E.g "www.youtube.com", "encrypted.google.com", "github.com")
       redirectName = urlParse(json.Redirect).hostname
 
@@ -106,10 +104,7 @@ module.exports = class DDG extends CordlrPlugin {
           inline: false
         })
       }
-    }
-
-    // Normal DuckDuckGo result
-    else if (json.Heading) {
+    } else if (json.Heading) { // Normal DuckDuckGo result
       // If there are Related Topics
       if (json.RelatedTopics) {
         let k = 3 // Loop 3 times
@@ -122,10 +117,10 @@ module.exports = class DDG extends CordlrPlugin {
         // Only fetch top 3 results, or less
         while (k > 0) {
           // No Value is not allowed!
-          if (json.RelatedTopics[k-1].FirstURL) {
+          if (json.RelatedTopics[k - 1].FirstURL) {
             fields.push({
-              name: json.RelatedTopics[k-1].Text || urlQuery,
-              value: json.RelatedTopics[k-1].FirstURL,
+              name: json.RelatedTopics[k - 1].Text || urlQuery,
+              value: json.RelatedTopics[k - 1].FirstURL,
               inline: false
             })
           }
@@ -159,14 +154,14 @@ module.exports = class DDG extends CordlrPlugin {
     }
   }
 
-  send(message, data) {
-    if (data.fields == false) { // If no Results found
+  send (message, data) {
+    if (data.fields === false) { // If no Results found
       return this.sendInfo(message, 'Could not find any results :(', 'No Result', {}, 'error')
     }
 
     // If redirect, no description is necessary
-    let description  = ''
-    
+    let description = ''
+
     if (!data.redirect) {
       // Inform about !bangs
       description = 'You can also use !bang\'s such as !g (google) !yt (youtube), etc,\n Read more about it at (https://duckduckgo.com/bang).'
