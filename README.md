@@ -1,5 +1,7 @@
 # Cordlr-DDG
 
+[![Join the chat at https://gitter.im/Devcord/cordlr-ddg](https://badges.gitter.im/Devcord/cordlr-ddg.svg)](https://gitter.im/Devcord/cordlr-ddg?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## Description
 
 DuckDuckGo package allows searching for topics and use of DDG **!bangs** via `!ddg`
