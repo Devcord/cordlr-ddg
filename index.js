@@ -118,9 +118,15 @@ module.exports = class DDG extends CordlrPlugin {
         while (k > 0) {
           // No Value is not allowed!
           if (json.RelatedTopics[k - 1].FirstURL) {
+            let value = false
+
+            if (json.RelatedTopics[k - 1].Text.length > 75) {
+              value = `${json.RelatedTopics[k - 1].Text}\n${json.RelatedTopics[k - 1].FirstURL}`
+            }
+
             fields.push({
-              name: json.RelatedTopics[k - 1].Text || urlQuery,
-              value: json.RelatedTopics[k - 1].FirstURL,
+              name: json.RelatedTopics[k - 1].Text.substring(0, 75) || urlQuery,
+              value: value || json.RelatedTopics[k - 1].FirstURL,
               inline: false
             })
           }
